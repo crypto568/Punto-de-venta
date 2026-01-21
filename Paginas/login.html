@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            padding: 30px;
+        }
+
+        h2 {
+            text-align: center;
+        }
+
+        .contenedor {
+            background: white;
+            padding: 20px;
+            max-width: 400px;
+            margin: auto;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        input {
+            width: 90%;
+            padding: 8px;
+            margin: 5px 0;
+        }
+
+        button {
+            padding: 8px 12px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .mensaje {
+            color: red;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="contenedor">
+    <h2>Iniciar Sesión</h2>
+
+    <div id="mensaje" class="mensaje"></div>
+
+    <div>
+        <label>Usuario:</label><br>
+        <input type="text" id="usuario" placeholder="Ingrese su usuario">
+    </div>
+
+    <div>
+        <label>Contraseña:</label><br>
+        <input type="password" id="password" placeholder="Ingrese su contraseña">
+    </div>
+
+    <div>
+        <button onclick="login()">Ingresar</button>
+    </div>
+</div>
+
+<script>
+/* 🔐 "Base de datos" simulada con un arreglo */
+const usuarios = [
+    { usuario: "admin",  password: "1234" },
+    { usuario: "carlos", password: "abcd" },
+    { usuario: "juan",   password: "9999" }
+];
+
+function login() {
+    let usuario = document.getElementById("usuario").value.trim();
+    let password = document.getElementById("password").value.trim();
+    let mensaje = document.getElementById("mensaje");
+
+    if (usuario === "" || password === "") {
+        mensaje.textContent = "❌ Completa todos los campos.";
+        return;
+    }
+
+    let loginCorrecto = false;
+
+    for (let i = 0; i < usuarios.length; i++) {
+        if (
+            usuarios[i].usuario === usuario &&
+            usuarios[i].password === password
+        ) {
+            loginCorrecto = true;
+            break;
+        }
+    }
+
+    if (loginCorrecto) {
+        // Redirigir al menú
+        window.location.href = "menu.html";
+    } else {
+        mensaje.textContent = "❌ Usuario o contraseña incorrectos.";
+    }
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Altas de Inventario</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            padding: 30px;
+        }
+
+        .contenedor {
+            background: white;
+            padding: 20px;
+            max-width: 400px;
+            margin: auto;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            text-align: center;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            margin: 8px 0;
+        }
+
+        button {
+            padding: 8px 12px;
+            margin: 5px 0;
+            cursor: pointer;
+        }
+
+        .mensaje {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        #regresar {
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+
+        #guardar {
+            background: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="contenedor">
+    <h2>Altas de Inventario</h2>
+
+    <!-- Botón regresar al menú -->
+    
+    <div id="mensaje" class="mensaje"></div>
+
+    <label>Nombre del producto:</label>
+    <input type="text" id="nombre" placeholder="Nombre del producto">
+
+    <label>Precio:</label>
+    <input type="number" id="precio" step="0.01" placeholder="Precio">
+
+    <label>Cantidad (Stock):</label>
+    <input type="number" id="cantidad" placeholder="Cantidad">
+    <button id="regresar" onclick="window.location.href='menu.html'">Volver al Menú</button>
+    <button id="guardar" onclick="guardarProducto()">Guardar</button>
+    <button onclick="limpiar()">Limpiar</button>
+</div>
+
+<script>
+let inventario = JSON.parse(localStorage.getItem("inventario")) || [];
+
+function guardarProducto() {
+    const nombre = document.getElementById("nombre").value.trim();
+    const precio = parseFloat(document.getElementById("precio").value);
+    const cantidad = parseInt(document.getElementById("cantidad").value);
+
+    const mensaje = document.getElementById("mensaje");
+
+    if (!nombre || isNaN(precio) || isNaN(cantidad)) {
+        mensaje.textContent = "❌ Todos los campos son obligatorios y válidos.";
+        mensaje.style.color = "red";
+        return;
+    }
+
+    const producto = {
+        id: Date.now(),
+        nombre,
+        precio,
+        cantidad
+    };
+
+    inventario.push(producto);
+    localStorage.setItem("inventario", JSON.stringify(inventario));
+
+    mensaje.textContent = "✅ Producto guardado correctamente.";
+    mensaje.style.color = "green";
+    limpiar();
+}
+
+function limpiar() {
+    document.getElementById("nombre").value = "";
+    document.getElementById("precio").value = "";
+    document.getElementById("cantidad").value = "";
+}
+</script>
+
+</body>
+</html>

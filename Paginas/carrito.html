@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Carrito de compras</title>
+    <title>Carrito de Compras</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -17,21 +17,10 @@
         .contenedor {
             background: white;
             padding: 20px;
-            max-width: 400px;
+            max-width: 500px;
             margin: auto;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-
-        input {
-            width: 70%;
-            padding: 8px;
-        }
-
-        button {
-            padding: 8px 10px;
-            margin: 5px 0;
-            cursor: pointer;
         }
 
         ul {
@@ -52,59 +41,116 @@
         .acciones button {
             margin-left: 5px;
         }
+
+        button {
+            cursor: pointer;
+            padding: 6px 10px;
+        }
+
+        #regresar {
+            margin-bottom: 15px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
 
-<h1>🛒 Carrito de compras</h1>
-
 <div class="contenedor">
-    <input type="text" id="producto" placeholder="Ingresa un producto">
-    <button onclick="agregarProducto()">Agregar</button>
+    <h1>Carrito de Compras</h1>
 
-    <ul id="lista"></ul>
+    <!-- Botón para regresar al menú -->
+    
+
+    <ul id="listaCarrito"></ul>
+
+    <button onclick="finalizarCompra()">Finalizar Compra</button>
+    <button id="regresar" onclick="window.location.href='menu.html'">Volver al Menú</button>
 </div>
 
 <script>
-function agregarProducto() {
-    let producto = document.getElementById("producto").value;
+// 📦 Leer carrito desde localStorage
+let carrito = JSON.parse(localStorage.getItem("carrito")) || [];
+let inventario = JSON.parse(localStorage.getItem("inventario")) || [];
 
-    if (producto === "") {
-        alert("Escribe un producto");
+const lista = document.getElementById("listaCarrito");
+
+// Render del carrito
+function renderCarrito() {
+    lista.innerHTML = "";
+
+    carrito.forEach((item, index) => {
+        const li = document.createElement("li");
+
+        const span = document.createElement("span");
+        span.textContent = `${item.nombre} $${item.precio} | Cantidad: ${item.cantidadSeleccionada || 1} | Stock: ${item.cantidad}`;
+
+        const div = document.createElement("div");
+        div.className = "acciones";
+
+        // Editar cantidad
+        const btnEditar = document.createElement("button");
+        btnEditar.textContent = "Editar";
+        btnEditar.onclick = () => editarCantidad(index);
+
+        // Eliminar del carrito
+        const btnEliminar = document.createElement("button");
+        btnEliminar.textContent = "Eliminar";
+        btnEliminar.onclick = () => eliminarProducto(index);
+
+        div.appendChild(btnEditar);
+        div.appendChild(btnEliminar);
+
+        li.appendChild(span);
+        li.appendChild(div);
+
+        lista.appendChild(li);
+    });
+
+    localStorage.setItem("carrito", JSON.stringify(carrito));
+}
+
+// Editar cantidad de productos a comprar
+function editarCantidad(index) {
+    const item = carrito[index];
+    const cantidadActual = item.cantidadSeleccionada || 1;
+
+    const nuevaCantidad = parseInt(prompt("Cantidad a comprar:", cantidadActual));
+
+    if (!isNaN(nuevaCantidad) && nuevaCantidad > 0) {
+        if (nuevaCantidad > item.cantidad) {
+            alert("❌ No hay suficiente stock disponible.");
+            return;
+        }
+        item.cantidadSeleccionada = nuevaCantidad;
+        renderCarrito();
+    }
+}
+
+// Eliminar producto del carrito
+function eliminarProducto(index) {
+    carrito.splice(index, 1);
+    renderCarrito();
+}
+
+// Finalizar compra
+function finalizarCompra() {
+    if (carrito.length === 0) {
+        alert("❌ El carrito está vacío.");
         return;
     }
 
-    let li = document.createElement("li");
-    let span = document.createElement("span");
-    span.textContent = producto;
+    // Guardar carrito en localStorage para usar en venta.html
+    localStorage.setItem("carrito", JSON.stringify(carrito));
 
-    let div = document.createElement("div");
-    div.className = "acciones";
-
-    let btnEditar = document.createElement("button");
-    btnEditar.textContent = "Editar";
-    btnEditar.onclick = function() {
-        let nuevo = prompt("Editar producto:", span.textContent);
-        if (nuevo !== null && nuevo !== "") {
-            span.textContent = nuevo;
-        }
-    };
-
-    let btnEliminar = document.createElement("button");
-    btnEliminar.textContent = "Eliminar";
-    btnEliminar.onclick = function() {
-        li.remove();
-    };
-
-    div.appendChild(btnEditar);
-    div.appendChild(btnEliminar);
-
-    li.appendChild(span);
-    li.appendChild(div);
-
-    document.getElementById("lista").appendChild(li);
-    document.getElementById("producto").value = "";
+    // Redirigir a ventana de ventas
+    window.location.href = "venta.html";
 }
+
+// Render inicial
+renderCarrito();
 </script>
 
 </body>

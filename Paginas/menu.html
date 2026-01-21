@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Menú</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            padding: 30px;
+        }
+
+        h2 {
+            text-align: center;
+        }
+
+        .contenedor {
+            background: white;
+            padding: 20px;
+            max-width: 400px;
+            margin: auto;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .item {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type="text"] {
+            width: 70%;
+            padding: 8px;
+        }
+
+        button {
+            padding: 8px 10px;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Menú de Productos</h2>
+
+<div class="contenedor">
+    <form onsubmit="irAlCarrito(); return false;">
+        <div id="listaProductos"></div>
+        <button type="submit">Ir al carrito</button>
+    </form>
+    <button onclick="window.location.href='altas.html'">Altas de Inventario</button>
+    <button onclick="window.location.href='Login.html'">Salir</button></div>
+</div>
+
+<script>
+/* 📦 "Base de datos" simulada */
+const productos = JSON.parse(localStorage.getItem("inventario")) || [];
+let carrito = [];
+
+const lista = document.getElementById("listaProductos");
+
+function renderMenu() {
+    lista.innerHTML = "";
+
+    productos.forEach(prod => {
+        if (prod.cantidad <= 0) return; // no mostrar sin stock
+
+        const div = document.createElement("div");
+
+        // Checkbox para seleccionar producto
+        const check = document.createElement("input");
+        check.type = "checkbox";
+        check.value = prod.id;
+
+        // Mostrar nombre, precio y stock
+        const span = document.createElement("span");
+        span.textContent = `${prod.nombre} $${prod.precio} | Stock: ${prod.cantidad}`;
+
+        div.appendChild(check);
+        div.appendChild(span);
+
+        lista.appendChild(div);
+    });
+}
+
+function irAlCarrito() {
+    // Copiar seleccionados al carrito
+    carrito = [];
+    const checks = lista.querySelectorAll("input[type=checkbox]");
+    checks.forEach(c => {
+        if (c.checked) {
+            const id = parseInt(c.value);
+            const prod = productos.find(p => p.id === id);
+            if (prod) {
+                carrito.push({
+                    id: prod.id,
+                    nombre: prod.nombre,
+                    precio: prod.precio,
+                    cantidad: prod.cantidad,
+                    cantidadSeleccionada: 1
+                });
+            }
+        }
+    });
+    localStorage.setItem("carrito", JSON.stringify(carrito));
+    window.location.href = "carrito.html";
+}
+
+// Render inicial
+renderMenu();
+</script>
+
+</body>
+</html>

@@ -12,14 +12,14 @@
 
         .contenedor {
             background: white;
-            max-width: 400px;
+            max-width: 600px;
             margin: auto;
             padding: 25px;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0,0,0,0.15);
         }
 
-        h1 {
+        h1, h2 {
             text-align: center;
         }
 
@@ -56,6 +56,23 @@
             background: #e74c3c;
             color: white;
         }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background: #3498db;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -66,10 +83,10 @@
     <label>Método de pago:</label>
     <select id="metodoPago">
         <option value="">-- Selecciona --</option>
-        <option>Efectivo</option>
-        <option>Tarjeta</option>
-        <option>Transferencia</option>
-        <option>PayPal</option>
+        <option value="Efectivo">Efectivo</option>
+        <option value="Tarjeta">Tarjeta</option>
+        <option value="Transferencia">Transferencia</option>
+        <option value="PayPal">PayPal</option>
     </select>
 
     <label>Fecha:</label>
@@ -79,27 +96,106 @@
         <button class="completar" onclick="completarVenta()">Completar</button>
         <button class="cancelar" onclick="cancelarVenta()">Cancelar</button>
     </div>
+
+    <h2>Ventas Generadas</h2>
+    <table id="tablaVentas">
+        <thead>
+            <tr>
+                <th>ID Venta</th>
+                <th>Método</th>
+                <th>Fecha</th>
+                <th>Productos</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
 </div>
 
 <script>
-function completarVenta() {
-    let metodo = document.getElementById("metodoPago").value;
-    let fecha = document.getElementById("fecha").value;
+let inventario = JSON.parse(localStorage.getItem("inventario")) || [];
+let ventas = JSON.parse(localStorage.getItem("ventas")) || [];
+let carrito = JSON.parse(localStorage.getItem("carrito")) || [];
 
-    if (metodo === "" || fecha === "") {
-        alert("Completa todos los campos");
+// Completar venta
+function completarVenta() {
+    const metodo = document.getElementById("metodoPago").value;
+    const fecha = document.getElementById("fecha").value;
+
+    if (!metodo || !fecha) {
+        alert("❌ Completa todos los campos");
         return;
     }
 
-    alert("✅ Venta completada\nMétodo: " + metodo + "\nFecha: " + fecha);
+    if (carrito.length === 0) {
+        alert("❌ No hay productos en la venta");
+        return;
+    }
+
+    // Descontar stock
+    carrito.forEach(item => {
+        const prod = inventario.find(p => p.id === item.id);
+        if (prod) {
+            prod.cantidad -= item.cantidadSeleccionada || 1;
+            if (prod.cantidad < 0) prod.cantidad = 0;
+        }
+    });
+
+    localStorage.setItem("inventario", JSON.stringify(inventario));
+
+    // Guardar venta
+    const nuevaVenta = {
+        id: Date.now(),
+        metodo,
+        fecha,
+        productos: carrito
+    };
+    ventas.push(nuevaVenta);
+    localStorage.setItem("ventas", JSON.stringify(ventas));
+
+    // Limpiar carrito y formulario
+    localStorage.removeItem("carrito");
+    carrito = [];
+    document.getElementById("metodoPago").value = "";
+    document.getElementById("fecha").value = "";
+
+    alert("✅ Venta completada");
+
+    // Actualizar tabla
+    renderTablaVentas();
 }
 
+// Cancelar venta
 function cancelarVenta() {
     if (confirm("¿Deseas cancelar la venta?")) {
+        // Limpiar campos
         document.getElementById("metodoPago").value = "";
         document.getElementById("fecha").value = "";
+
+        // Redirigir al menú
+        window.location.href = "menu.html";
     }
 }
+
+// Renderizar tabla de ventas
+function renderTablaVentas() {
+    const tbody = document.querySelector("#tablaVentas tbody");
+    tbody.innerHTML = "";
+
+    ventas.forEach(v => {
+        const tr = document.createElement("tr");
+        const productosText = v.productos.map(p => `${p.nombre} x${p.cantidadSeleccionada || 1}`).join(", ");
+        tr.innerHTML = `
+            <td>${v.id}</td>
+            <td>${v.metodo}</td>
+            <td>${v.fecha}</td>
+            <td>${productosText}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+// Render inicial
+renderTablaVentas();
 </script>
 
 </body>
